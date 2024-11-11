@@ -29,7 +29,7 @@ int main() {
         for (j = 0; j < f; j++)
             cout << "\t" << m[j];
         if (k == f)
-            cout << "\tPF No. " << pf <<"Count: "<<count;
+            cout << "\tPF No. " << pf ;
         cout << "\n";
         if (count == f)
             count = 0;
