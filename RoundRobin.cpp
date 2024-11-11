@@ -1,55 +1,69 @@
 #include <iostream>
+#include <vector>
+
 using namespace std;
 
 int main() {
-    int i, j, n, bu[10], wa[10], tat[10], t, ct[10], max;
-    float awt = 0, att = 0, temp = 0;
-
+    int n, time_quantum;
     cout << "Enter the number of processes: ";
     cin >> n;
 
-    for (i = 0; i < n; i++) {
-        cout << "Enter Burst Time for Process " << i + 1 << ": ";
-        cin >> bu[i];
-        ct[i] = bu[i]; // Copy burst time to ct array for later calculations
+    vector<int> arrival_time(n);
+    vector<int> burst_time(n);
+    vector<int> remaining_time(n);
+    vector<int> waiting_time(n);
+    vector<int> turnaround_time(n);
+
+    cout << "Enter the arrival time and burst time for each process:\n";
+    for (int i = 0; i < n; ++i) {
+        cout << "Process " << i + 1 << ":" << endl;
+        cout << "Arrival time: ";
+        cin >> arrival_time[i];
+        cout << "Burst time: ";
+        cin >> burst_time[i];
+        remaining_time[i] = burst_time[i];
     }
 
-    cout << "Enter the size of time slice: ";
-    cin >> t;
+    cout << "Enter the time quantum: ";
+    cin >> time_quantum;
 
-    max = bu[0];
-    for (i = 1; i < n; i++) {
-        if (max < bu[i]) max = bu[i]; // Find the maximum burst time
-    }
+    int current_time = 0;
+    int completed_processes = 0;
 
-    for (j = 0; j < (max / t) + 1; j++) {
-        for (i = 0; i < n; i++) {
-            if (bu[i] != 0) { // Check if the process still has remaining burst time
-                if (bu[i] <= t) {
-                    tat[i] = temp + bu[i]; // Calculate turnaround time
-                    temp = temp + bu[i]; // Update total time
-                    bu[i] = 0; // Process is finished
+    while (completed_processes < n) {
+        for (int i = 0; i < n; ++i) {
+            if (arrival_time[i] <= current_time && remaining_time[i] > 0) {
+                if (remaining_time[i] <= time_quantum) {
+                    current_time += remaining_time[i];
+                    waiting_time[i] = current_time - burst_time[i] - arrival_time[i];
+                    turnaround_time[i] = current_time - arrival_time[i];
+                    remaining_time[i] = 0;
+                    completed_processes++;
                 } else {
-                    bu[i] = bu[i] - t; // Reduce remaining burst time
-                    temp = temp + t; // Update total time
+                    current_time += time_quantum;
+                    remaining_time[i] -= time_quantum;
                 }
             }
         }
     }
 
-    for (i = 0; i < n; i++) {
-        wa[i] = tat[i] - ct[i]; // Calculate waiting time
-        att += tat[i]; // Accumulate turnaround time
-        awt += wa[i]; // Accumulate waiting time
+    // Print the results
+    cout << "\nProcess\tArrival Time\tBurst Time\tWaiting Time\tTurnaround Time\n";
+    for (int i = 0; i < n; ++i) {
+        cout << i + 1 << "\t\t" << arrival_time[i] << "\t\t" << burst_time[i] << "\t\t" << waiting_time[i] << "\t\t" << turnaround_time[i] << endl;
     }
 
-    cout << "\nAverage Turnaround Time: " << att / n;
-    cout << "\nAverage Waiting Time: " << awt / n << endl;
-    cout << "\nPROCESS\t BURST TIME \t WAITING TIME\t TURNAROUND TIME\n";
-
-    for (i = 0; i < n; i++) {
-        cout << i + 1 << "\t " << ct[i] << "\t\t " << wa[i] << "\t\t " << tat[i] << endl;
+    // Calculate average waiting time and turnaround time
+    float avg_waiting_time = 0.0, avg_turnaround_time = 0.0;
+    for (int i = 0; i < n; i++) {
+        avg_waiting_time += waiting_time[i];
+        avg_turnaround_time += turnaround_time[i];
     }
+    avg_waiting_time /= n;
+    avg_turnaround_time /= n;
+
+    cout << "\nAverage Waiting Time: " << avg_waiting_time << endl;
+    cout << "Average Turnaround Time: " << avg_turnaround_time << endl;
 
     return 0;
 }
